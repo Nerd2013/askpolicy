@@ -43,8 +43,6 @@ entailment_checker = KeywordEntailmentChecker()
 
 @app.post("/ask")
 def ask(q: str):
-    
-
     answer, context_pack = answer_query_with_context(
         query=q,
         retriever=retriever,
@@ -71,6 +69,7 @@ def build_explanation(context_pack):
             "distance": c.get("distance"),
             "included": True,
             "reason": c.get("_reason"),
+            "text": c.get("text", ""),
         })
 
     dropped = []
