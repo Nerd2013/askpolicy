@@ -1,0 +1,7 @@
+rag-core @ file:///Users/madhurbhinda/Projects/rag-core
+fastapi
+uvicorn
+pypdf
+faiss-cpu
+openai
+python-dotenv
