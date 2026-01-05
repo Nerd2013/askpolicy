@@ -9,6 +9,7 @@ from app.llm.openai_llm import OpenAILLM
 from rag_core.validation.entailment import KeywordEntailmentChecker
 from rag_core.pipeline.answer_query import answer_query_with_context
 from app.persistence.store import init_db, store_interaction
+from app.persistence.store import get_interaction
 
 from app.ingestion.document_loader import load_documents_from_dir
 
@@ -68,7 +69,41 @@ def ask(q: str):
         "answer": answer,
         "explanation": explanation,
     }
-    
+
+@app.post("/replay/{interaction_id}")
+def replay(interaction_id: int):
+    record = get_interaction(interaction_id)
+    if not record:
+        return {"error": "Interaction not found"}
+
+    question = record["question"]
+
+    answer, context_pack = answer_query_with_context(
+        query=question,
+        retriever=retriever,
+        llm=llm,
+        context_policy=context_policy,
+        entailment_checker=entailment_checker,
+    )
+
+    explanation = build_explanation(context_pack)
+
+    try:
+        store_interaction(
+            question=question,
+            answer=answer,
+            explanation=explanation,
+        )
+    except Exception as e:
+        logger.warning("Failed to persist replay: %s", e)
+
+    return {
+        "original": record,
+        "replay": {
+            "answer": answer,
+            "explanation": explanation,
+        },
+    }
     
 #-------------------helper ----------#
 def build_explanation(context_pack):

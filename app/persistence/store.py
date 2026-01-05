@@ -71,3 +71,26 @@ def list_interactions(limit: int = 50):
         })
 
     return results
+
+def get_interaction(interaction_id: int):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.execute(
+            """
+            SELECT id, timestamp, question, answer, explanation_json
+            FROM interactions
+            WHERE id = ?
+            """,
+            (interaction_id,),
+        )
+        row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    return {
+        "id": row[0],
+        "timestamp": row[1],
+        "question": row[2],
+        "answer": row[3],
+        "explanation": json.loads(row[4]),
+    }

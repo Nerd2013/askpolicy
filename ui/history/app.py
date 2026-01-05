@@ -31,3 +31,23 @@ else:
 
             st.markdown("### Explanation")
             st.json(r["explanation"])
+            # --------------------
+            # Replay button
+            # --------------------
+            if st.button(f"🔁 Replay #{r['id']}", key=f"replay_{r['id']}"):
+                import requests
+
+                resp = requests.post(
+                    f"http://127.0.0.1:8000/replay/{r['id']}"
+                )
+
+                if resp.status_code != 200:
+                    st.error("Replay failed")
+                else:
+                    replay_data = resp.json()
+
+                    st.markdown("### 🔁 Replay Answer")
+                    st.write(replay_data["replay"]["answer"])
+
+                    st.markdown("### 🔁 Replay Explanation")
+                    st.json(replay_data["replay"]["explanation"])
