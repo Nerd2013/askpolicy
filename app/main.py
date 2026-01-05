@@ -8,6 +8,7 @@ from app.retrieval.policy_retriever import PolicyRetriever
 from app.llm.openai_llm import OpenAILLM
 from rag_core.validation.entailment import KeywordEntailmentChecker
 from rag_core.pipeline.answer_query import answer_query_with_context
+from app.persistence.store import init_db, store_interaction
 
 from app.ingestion.document_loader import load_documents_from_dir
 
@@ -22,6 +23,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
+init_db()
 
 chunks = load_documents_from_dir(data_dir="data")
 logger.info(
@@ -53,6 +55,15 @@ def ask(q: str):
 
     explanation = build_explanation(context_pack)
 
+    try:
+        store_interaction(
+            question=q,
+            answer=answer,
+            explanation=explanation,
+        )
+    except Exception as e:
+        logger.warning("Failed to persist interaction: %s", e)
+    
     return {
         "answer": answer,
         "explanation": explanation,
