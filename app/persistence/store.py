@@ -45,3 +45,29 @@ def store_interaction(*, question, answer, explanation):
             ),
         )
         conn.commit()
+        
+
+def list_interactions(limit: int = 50):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.execute(
+            """
+            SELECT id, timestamp, question, answer, explanation_json
+            FROM interactions
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        rows = cursor.fetchall()
+
+    results = []
+    for row in rows:
+        results.append({
+            "id": row[0],
+            "timestamp": row[1],
+            "question": row[2],
+            "answer": row[3],
+            "explanation": json.loads(row[4]),
+        })
+
+    return results
